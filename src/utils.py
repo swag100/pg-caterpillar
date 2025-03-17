@@ -1,3 +1,4 @@
+import math
 import pygame
 
 #window
@@ -14,3 +15,14 @@ def get_window_size():
 
 def get_joysticks():
     return [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+
+def normalize(vector):
+    #normalize this vector
+    sum = 0
+    for x in vector:
+        sum += x ** 2
+
+    magnitude = math.sqrt(sum)
+
+    if magnitude != 0:
+        vector = [x / magnitude for x in vector]

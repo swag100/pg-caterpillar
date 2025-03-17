@@ -1,4 +1,3 @@
-import math
 import pygame
 import utils
 from entities.entity import Entity
@@ -10,13 +9,15 @@ class Player(Entity):
         #The joystick object that this player will use for input. None means keyboard
         self.joystick = joystick
 
-        self.max_length = 12
+        self.default_max_length = 2
+        self.max_length = self.default_max_length
         
         self.is_growing = False
-        self.grow_time = 0.6
+        self.grow_time = 0.1
         self.grow_time_elapsed = 0
+        self.grow_speed = 8 #Per pxiel
 
-        self.speed = 256 #Per second
+        self.speed = 128 #Per second
         
         self.segments = []
 
@@ -37,10 +38,6 @@ class Player(Entity):
     def tick(self, dt):
         #apply gravity
         self.velocity[1] += utils.GRAVITY * dt
-
-        #nullify gravity if you're growing longer
-        if self.is_growing:
-            self.velocity[1] = 0
         
         #movement
         if self.joystick:
@@ -55,19 +52,34 @@ class Player(Entity):
 
             move = [keys[pygame.K_d] - keys[pygame.K_a], keys[pygame.K_s] - keys[pygame.K_w]]
 
-            #normalize this vector
-            magnitude = math.sqrt(move[0] ** 2 + move[1] ** 2)
+        #normalize this vector
+        utils.normalize(move)
 
-            if magnitude != 0:
-                move = [x / magnitude for x in move]
-
-        #apply move    
-        self.velocity[0] = move[0] * self.speed * dt
+        #apply move 
         if self.is_growing:
-            self.velocity[1] = move[1] * self.speed * dt
+            self.grow_time_elapsed += dt
+
+            #reset velocity
+            self.velocity = [0, 0]
+
+            if self.grow_time_elapsed % self.grow_time <= dt:
+                #later: Use list comprehension
+                self.velocity[0] = move[0] * self.grow_speed
+                self.velocity[1] = move[1] * self.grow_speed
+            
+            if self.grow_time_elapsed >= self.max_length:
+                self.is_growing = False
+                self.grow_time_elapsed = 0
+        
+        #regular platformer
+        else:
+            self.velocity[0] = move[0] * self.speed * dt
 
         #handle collisions
         self.handle_collisions(self.state.tiles)
+
+        if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
+            self.max_length = self.default_max_length
 
     def draw(self, surface):
         x,y = self.position
