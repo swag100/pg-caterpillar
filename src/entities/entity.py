@@ -1,4 +1,3 @@
-import pygame
 import utils
 
 class Entity:
@@ -25,20 +24,14 @@ class Entity:
                 collisions.append(tile)
         
         return collisions
-    
-    def handle_event(self, event):
-        pass
-    
-    def tick(self, dt):
-        #apply gravity
-        self.velocity[1] += utils.GRAVITY * dt
-        
+
+    def handle_collisions(self, tiles):
         #collisions - x first, then y
         for i in range(2):
             self.collided[i] = False
             self.position[i] += self.velocity[i]
             
-            for collision in self.get_collisions(self.state.tiles):
+            for collision in self.get_collisions(tiles):
                 if self.velocity[i] > 0:
                     self.position[i] = collision[i] - self.size[i]
                 else:
@@ -49,6 +42,17 @@ class Entity:
                 #reset velocity
                 self.collided[i] = True
                 self.velocity[i] = 0
+
+    
+    def handle_event(self, event):
+        pass
+    
+    def tick(self, dt):
+        #apply gravity
+        self.velocity[1] += utils.GRAVITY * dt
+
+        #handle collisions
+        self.handle_collisions(self.state.tiles)
         
     def draw(self, surface):
         pass
