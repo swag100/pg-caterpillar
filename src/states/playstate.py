@@ -17,34 +17,24 @@ class PlayState(State):
             pygame.Rect(0,100,100,20),
             pygame.Rect(150,100,100,20)
         ]
-        self.entities = []
+        self.players = [Player(self, 16, 16, None)]
 
         self.joysticks = utils.get_joysticks()
+        for joystick in self.joysticks:
+            for player in self.players:
+                if player.joystick == joystick:
+                    #Do not run rest of code IF theres already a player assigned to this joystick
+                    continue
+
+            self.players.append(
+                Player(self, 16, 16, joystick)
+            )
 		
     def handle_event(self, event):
-        if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED, pygame.JOYBUTTONDOWN]:
-            self.joysticks = utils.get_joysticks()
-
-            #update players
-            for joy in range(len(self.joysticks)):
-                #check if we dont need to make a new player for a joystick
-                player_already_exists = False
-                for entity in self.entities:
-                    if hasattr(entity, 'joy'):
-                        if entity.joy == joy:
-                            player_already_exists = True
-
-                        #check for who needs to be removed
-                        if entity.joy not in range(len(self.joysticks)):
-                            self.entities.remove(entity)
-
-                if not player_already_exists:
-                    self.entities.append(Player(self, 0, 0, joy))
-
-        for entity in self.entities: entity.handle_event(event)
+        for entity in self.players: entity.handle_event(event)
 
     def tick(self, dt):
-        for entity in self.entities: entity.tick(dt)
+        for entity in self.players: entity.tick(dt)
 
     def draw(self, surface):
         surface.fill((255,255,255))
@@ -52,5 +42,5 @@ class PlayState(State):
         for tile in self.tiles: 
             pygame.draw.rect(surface, (128,128,128), tile)
         
-        for entity in self.entities: 
+        for entity in self.players: 
             entity.draw(surface)
