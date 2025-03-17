@@ -8,7 +8,7 @@ class Entity:
         self.size = [w, h]
         
         self.velocity = [0, 0]
-        self.collided = [False, False]
+        self.collision = [False, False]
     
     def get_collisions(self, tiles):
         collisions = []
@@ -28,7 +28,7 @@ class Entity:
     def handle_collisions(self, tiles):
         #collisions - x first, then y
         for i in range(2):
-            self.collided[i] = False
+            self.collision[i] = False
             self.position[i] += self.velocity[i]
             
             for collision in self.get_collisions(tiles):
@@ -38,9 +38,9 @@ class Entity:
                     #0 + 2 = 2 (w), 1 + 2 = 3 (h)
                     #we're finding right / bottom of rect respectively.
                     self.position[i] = collision[i] + collision[i + 2]
-                
+
                 #reset velocity
-                self.collided[i] = True
+                self.collision[i] = ((int(self.velocity[i] > 0) * 2) - 1)
                 self.velocity[i] = 0
 
     

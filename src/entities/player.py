@@ -25,19 +25,13 @@ class Player(Entity):
         #keyboard
         if event.type in [pygame.KEYUP, pygame.KEYDOWN]:
             if event.key == pygame.K_SPACE:
-
-                if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
-                    self.max_length = self.default_max_length
-                    self.is_growing = event.type == pygame.KEYDOWN
+                self.is_growing = event.type == pygame.KEYDOWN
 
         #controller
         if event.type in [pygame.JOYBUTTONUP, pygame.JOYBUTTONDOWN]:
             if self.joystick and event.instance_id == self.joystick.get_instance_id():
                 if event.button == pygame.CONTROLLER_BUTTON_A:
-
-                    if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
-                        self.max_length = self.default_max_length
-                        self.is_growing = event.type == pygame.JOYBUTTONDOWN
+                    self.is_growing = event.type == pygame.JOYBUTTONDOWN
 
         #do pause logic
 
@@ -63,7 +57,8 @@ class Player(Entity):
 
         #apply move 
         if self.is_growing:
-            self.grow_time_elapsed += dt
+            if move != [0, 0]:
+                self.grow_time_elapsed += dt
 
             #reset velocity
             self.velocity = [0, 0]
