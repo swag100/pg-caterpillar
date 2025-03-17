@@ -25,13 +25,19 @@ class Player(Entity):
         #keyboard
         if event.type in [pygame.KEYUP, pygame.KEYDOWN]:
             if event.key == pygame.K_SPACE:
-                self.is_growing = event.type == pygame.KEYDOWN
+
+                if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
+                    self.max_length = self.default_max_length
+                    self.is_growing = event.type == pygame.KEYDOWN
 
         #controller
         if event.type in [pygame.JOYBUTTONUP, pygame.JOYBUTTONDOWN]:
             if self.joystick and event.instance_id == self.joystick.get_instance_id():
                 if event.button == pygame.CONTROLLER_BUTTON_A:
-                    self.is_growing = event.type == pygame.JOYBUTTONDOWN
+
+                    if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
+                        self.max_length = self.default_max_length
+                        self.is_growing = event.type == pygame.JOYBUTTONDOWN
 
         #do pause logic
 
@@ -52,8 +58,8 @@ class Player(Entity):
 
             move = [keys[pygame.K_d] - keys[pygame.K_a], keys[pygame.K_s] - keys[pygame.K_w]]
 
-        #normalize this vector
-        utils.normalize(move)
+            #normalize this vector
+            utils.normalize(move)
 
         #apply move 
         if self.is_growing:
@@ -63,13 +69,12 @@ class Player(Entity):
             self.velocity = [0, 0]
 
             if self.grow_time_elapsed % self.grow_time <= dt:
-                #later: Use list comprehension
-                self.velocity[0] = move[0] * self.grow_speed
-                self.velocity[1] = move[1] * self.grow_speed
+                for i in range(2): self.velocity[i] = move[i] * self.grow_speed
             
             if self.grow_time_elapsed >= self.max_length:
                 self.is_growing = False
                 self.grow_time_elapsed = 0
+                self.max_length = 0
         
         #regular platformer
         else:
@@ -77,9 +82,6 @@ class Player(Entity):
 
         #handle collisions
         self.handle_collisions(self.state.tiles)
-
-        if self.collided[1]: #we need to make sure they are on the FLOOR. right now, were just checking for if theyre on a roof or floor
-            self.max_length = self.default_max_length
 
     def draw(self, surface):
         x,y = self.position
