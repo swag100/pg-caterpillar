@@ -20,7 +20,6 @@ class Segment:
             self.position = self.player.positions[len(self.player.positions) - self.index]# * self.player.segment_distance]
         """
 
-
     def draw(self, surface):
         x,y = self.position
         w,h = self.size
@@ -144,11 +143,15 @@ class Player(Entity):
             self.grow_count = 0
 
         #add position to positions for our segments to follow
-        if len(self.positions) <= 200:
-            self.positions.append(self.position)
-        #remove first element if it gets too long
-        else:
-            self.positions.pop(0)
+        if len(self.positions) > 0 and self.positions[-1] != self.position:
+            if len(self.positions) <= self.max_segments * self.segment_distance:
+                self.positions.append(self.position)
+
+            #remove first element if it gets too long
+            if len(self.positions) > self.max_segments * self.segment_distance:
+                self.positions.pop(0)
+
+        print(self.positions)
 
     def draw(self, surface):
         x,y = self.position
