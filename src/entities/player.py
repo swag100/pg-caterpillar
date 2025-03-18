@@ -1,11 +1,25 @@
+import math
 import pygame
 import utils
 from entities.entity import Entity
 
 class Segment:
     def __init__(self, player, x, y):
+        self.player = player
+
+        print(len(self.player.segments))
+        self.index = len(self.player.segments) + 1
+
         self.position = [x,y]
         self.size = player.size
+
+    def tick(self, dt):
+        pass
+        """
+        if 0 <= self.index <= len(self.player.positions):
+            self.position = self.player.positions[len(self.player.positions) - self.index]# * self.player.segment_distance]
+        """
+
 
     def draw(self, surface):
         x,y = self.position
@@ -27,13 +41,18 @@ class Player(Entity):
 
         #length
         self.max_segments = 12
+        self.segment_distance = 100
+
         self.segments = []
+
+        #past positions
+        self.positions = []
         
         #keeping track of growing vars
         self.is_growing = False
         self.grow_time = 0.1
         self.grow_time_elapsed = 0
-        self.grow_speed = 8 #Per pxiel
+        self.grow_speed = 192 #Per pxiel
         self.grow_count = 0
 
         #not growing
@@ -42,6 +61,7 @@ class Player(Entity):
     def start_growing(self):
         if self.grow_count <= 0:
             self.is_growing = True
+            self.segments.append(Segment(self, self.position[0], self.position[1]))
 
     def stop_growing(self):
         self.is_growing = False
@@ -95,15 +115,16 @@ class Player(Entity):
             if move != [0, 0]:
                 self.grow_time_elapsed += dt
 
-            #reset velocity
-            self.velocity = [0, 0]
+            #move
+            for i in range(2): self.velocity[i] = move[i] * self.speed * dt
 
-            if self.grow_time_elapsed % self.grow_time <= dt:
-                for i in range(2): self.velocity[i] = move[i] * self.grow_speed
+            #spawn a new segment when you go too far
+            #theirs minus ours
+            dist = math.hypot(self.segments[-1].position[0] - self.position[0], self.segments[-1].position[1] - self.position[1])
+            if dist >= self.size[0]: #probably replace size with radius 
+                self.segments.append(Segment(self, self.position[0], self.position[1]))
 
-                self.segments.append(
-                    Segment(self, self.position[0], self.position[1])
-                )
+            for segment in self.segments: segment.tick(dt)
             
             if len(self.segments) >= self.max_segments:
                 self.is_growing = False
@@ -118,8 +139,16 @@ class Player(Entity):
         #handle collisions
         self.handle_collisions(self.state.tiles)
 
+        #reset grow_counter... So player can grow again!
         if self.collision[1] > 0: 
             self.grow_count = 0
+
+        #add position to positions for our segments to follow
+        if len(self.positions) <= 200:
+            self.positions.append(self.position)
+        #remove first element if it gets too long
+        else:
+            self.positions.pop(0)
 
     def draw(self, surface):
         x,y = self.position
