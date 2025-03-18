@@ -8,7 +8,7 @@ class Entity:
         self.size = [w, h]
         
         self.velocity = [0, 0]
-        self.collision = [False, False]
+        self.collision = [0, 0]
     
     def get_collisions(self, tiles):
         collisions = []
@@ -28,7 +28,7 @@ class Entity:
     def handle_collisions(self, tiles):
         #collisions - x first, then y
         for i in range(2):
-            self.collision[i] = False
+            self.collision[i] = 0
             self.position[i] += self.velocity[i]
             
             for collision in self.get_collisions(tiles):

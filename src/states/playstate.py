@@ -17,7 +17,7 @@ class PlayState(State):
             pygame.Rect(0,100,100,20),
             pygame.Rect(150,100,100,20)
         ]
-        self.players = [Player(self, 16, 16, None)]
+        self.players = []
 
         self.joysticks = utils.get_joysticks()
         for joystick in self.joysticks:
